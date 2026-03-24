@@ -13,7 +13,7 @@
       "Resource": "arn:aws:sqs:us-east-1:106978078844:togglemaster-dev-events"
     },
     {
-      "Sid": "WriteDynamoDB",
+      "Sid": "UseDynamoDB",
       "Effect": "Allow",
       "Action": [
         "dynamodb:PutItem",
