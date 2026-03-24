@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: flag-service
+  name: targeting-service
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: "https://github.com/Krohanar/togglemaster-gitops.git"
-    targetRevision: HEAD
-    path: apps/flag-service
+    targetRevision: main
+    path: apps/targeting-service
   destination:
     server: https://kubernetes.default.svc
     namespace: togglemaster
