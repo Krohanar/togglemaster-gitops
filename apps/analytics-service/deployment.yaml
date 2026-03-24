@@ -18,7 +18,7 @@ spec:
       serviceAccountName: analytics-service
       containers:
         - name: analytics-service
-          image: 106978078844.dkr.ecr.us-east-1.amazonaws.com/togglemaster/dev/analytics-service:c226f1d
+          image: 106978078844.dkr.ecr.us-east-1.amazonaws.com/togglemaster/dev/analytics-service:27ea53f
           imagePullPolicy: Always
           ports:
             - containerPort: 8005
