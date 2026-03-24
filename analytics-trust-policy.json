@@ -1,0 +1,18 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::106978078844:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/AD1DB12748832361A91969B46CDD70A0"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "oidc.eks.us-east-1.amazonaws.com/id/AD1DB12748832361A91969B46CDD70A0:aud": "sts.amazonaws.com",
+          "oidc.eks.us-east-1.amazonaws.com/id/AD1DB12748832361A91969B46CDD70A0:sub": "system:serviceaccount:togglemaster:analytics-service"
+        }
+      }
+    }
+  ]
+}
