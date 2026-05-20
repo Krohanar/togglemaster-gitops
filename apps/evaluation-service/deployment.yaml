@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: evaluation-service
-          image: 106978078844.dkr.ecr.us-east-1.amazonaws.com/togglemaster/dev/evaluation-service:v1
+          image: 106978078844.dkr.ecr.us-east-1.amazonaws.com/togglemaster/dev/evaluation-service:aa1995f
           imagePullPolicy: Always
           ports:
             - containerPort: 8004
