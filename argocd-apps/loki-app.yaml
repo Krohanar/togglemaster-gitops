@@ -44,9 +44,13 @@ spec:
 
         minio:
           enabled: true
+          persistence:
+            enabled: false
 
         singleBinary:
           replicas: 1
+          persistence:
+            enabled: false
 
         backend:
           replicas: 0
@@ -79,6 +83,12 @@ spec:
           enabled: true
           service:
             type: ClusterIP
+
+        chunksCache:
+          enabled: false
+
+        resultsCache:
+          enabled: false
 
         lokiCanary:
           enabled: false
