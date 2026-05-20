@@ -29,6 +29,13 @@ spec:
         service:
           type: ClusterIP
 
+        extraEnvs:
+          - name: NEW_RELIC_LICENSE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: newrelic-license-key
+                key: NEW_RELIC_LICENSE_KEY
+
         ports:
           otlp:
             enabled: true
@@ -73,6 +80,11 @@ spec:
             debug:
               verbosity: detailed
 
+            otlphttp/newrelic:
+              endpoint: https://otlp.nr-data.net:4318
+              headers:
+                api-key: ${env:NEW_RELIC_LICENSE_KEY}
+
           service:
             extensions:
               - health_check
@@ -86,6 +98,7 @@ spec:
                   - batch
                 exporters:
                   - debug
+                  - otlphttp/newrelic
 
               metrics:
                 receivers:
