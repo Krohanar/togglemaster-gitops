@@ -34,6 +34,16 @@ spec:
                 secretKeyRef:
                   name: auth-service-secret
                   key: DATABASE_URL
+            - name: OTEL_ENABLED
+              value: "true"
+            - name: OTEL_SERVICE_NAME
+              value: "auth-service"
+            - name: DEPLOYMENT_ENVIRONMENT
+              value: "dev"
+            - name: SERVICE_VERSION
+              value: "otel-v1"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "otel-collector.observability.svc.cluster.local:4318"
           readinessProbe:
             httpGet:
               path: /health
