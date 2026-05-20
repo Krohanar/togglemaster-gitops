@@ -1,0 +1,118 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opentelemetry-collector
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    chart: opentelemetry-collector
+    targetRevision: 0.146.0
+    helm:
+      releaseName: otel-collector
+      values: |
+        fullnameOverride: otel-collector
+
+        mode: deployment
+
+        replicaCount: 1
+
+        image:
+          repository: otel/opentelemetry-collector-contrib
+          tag: 0.136.0
+
+        command:
+          name: otelcol-contrib
+
+        service:
+          type: ClusterIP
+
+        ports:
+          otlp:
+            enabled: true
+            containerPort: 4317
+            servicePort: 4317
+            protocol: TCP
+          otlp-http:
+            enabled: true
+            containerPort: 4318
+            servicePort: 4318
+            protocol: TCP
+          metrics:
+            enabled: true
+            containerPort: 8888
+            servicePort: 8888
+            protocol: TCP
+
+        config:
+          extensions:
+            health_check:
+              endpoint: 0.0.0.0:13133
+
+          receivers:
+            otlp:
+              protocols:
+                grpc:
+                  endpoint: 0.0.0.0:4317
+                http:
+                  endpoint: 0.0.0.0:4318
+
+          processors:
+            memory_limiter:
+              check_interval: 1s
+              limit_mib: 256
+              spike_limit_mib: 64
+
+            batch:
+              timeout: 5s
+              send_batch_size: 512
+
+          exporters:
+            debug:
+              verbosity: detailed
+
+          service:
+            extensions:
+              - health_check
+
+            pipelines:
+              traces:
+                receivers:
+                  - otlp
+                processors:
+                  - memory_limiter
+                  - batch
+                exporters:
+                  - debug
+
+              metrics:
+                receivers:
+                  - otlp
+                processors:
+                  - memory_limiter
+                  - batch
+                exporters:
+                  - debug
+
+              logs:
+                receivers:
+                  - otlp
+                processors:
+                  - memory_limiter
+                  - batch
+                exporters:
+                  - debug
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: observability
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
