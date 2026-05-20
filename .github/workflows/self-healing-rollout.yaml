@@ -1,0 +1,101 @@
+name: Self-Healing Rollout
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment:
+        description: "Deployment to restart"
+        required: true
+        default: "flag-service"
+      namespace:
+        description: "Kubernetes namespace"
+        required: true
+        default: "togglemaster"
+
+  repository_dispatch:
+    types:
+      - self_healing_rollout
+
+permissions:
+  contents: read
+
+jobs:
+  rollout-restart:
+    name: Restart Kubernetes deployment
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve target
+        id: target
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "deployment=${{ github.event.inputs.deployment }}" >> "$GITHUB_OUTPUT"
+            echo "namespace=${{ github.event.inputs.namespace }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployment=${{ github.event.client_payload.deployment || 'flag-service' }}" >> "$GITHUB_OUTPUT"
+            echo "namespace=${{ github.event.client_payload.namespace || 'togglemaster' }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install kubectl
+        shell: bash
+        run: |
+          curl -LO "https://dl.k8s.io/release/v1.30.14/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/kubectl
+          kubectl version --client
+
+      - name: Update kubeconfig
+        shell: bash
+        run: |
+          aws eks update-kubeconfig \
+            --region "$AWS_REGION" \
+            --name "$EKS_CLUSTER_NAME"
+
+      - name: Show current deployment status
+        shell: bash
+        run: |
+          kubectl get deployment "${{ steps.target.outputs.deployment }}" \
+            -n "${{ steps.target.outputs.namespace }}"
+
+          kubectl get pods \
+            -n "${{ steps.target.outputs.namespace }}" \
+            | grep "${{ steps.target.outputs.deployment }}" || true
+
+      - name: Self-healing rollout restart
+        shell: bash
+        run: |
+          echo "Starting self-healing action..."
+          echo "Deployment: ${{ steps.target.outputs.deployment }}"
+          echo "Namespace: ${{ steps.target.outputs.namespace }}"
+
+          kubectl rollout restart deployment/"${{ steps.target.outputs.deployment }}" \
+            -n "${{ steps.target.outputs.namespace }}"
+
+          kubectl rollout status deployment/"${{ steps.target.outputs.deployment }}" \
+            -n "${{ steps.target.outputs.namespace }}" \
+            --timeout=180s
+
+      - name: Show final deployment status
+        shell: bash
+        run: |
+          kubectl get deployment "${{ steps.target.outputs.deployment }}" \
+            -n "${{ steps.target.outputs.namespace }}"
+
+          kubectl get pods \
+            -n "${{ steps.target.outputs.namespace }}" \
+            | grep "${{ steps.target.outputs.deployment }}" || true
