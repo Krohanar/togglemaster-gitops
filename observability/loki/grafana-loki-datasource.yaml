@@ -8,6 +8,11 @@ metadata:
 data:
   loki-datasource.yaml: |
     apiVersion: 1
+
+    deleteDatasources:
+      - name: Loki
+        orgId: 1
+
     datasources:
       - name: Loki
         uid: loki

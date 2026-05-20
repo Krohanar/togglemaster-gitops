@@ -15,6 +15,7 @@ spec:
       values: |
         loki:
           enabled: true
+          isDefault: false
           persistence:
             enabled: false
           service:
@@ -28,6 +29,9 @@ spec:
 
         grafana:
           enabled: false
+          sidecar:
+            datasources:
+              enabled: false
 
         prometheus:
           enabled: false
