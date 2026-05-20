@@ -7,93 +7,38 @@ spec:
   project: default
 
   source:
-    repoURL: https://grafana-community.github.io/helm-charts
-    chart: loki
-    targetRevision: 12.0.0
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki-stack
+    targetRevision: 2.10.3
     helm:
-      releaseName: loki
+      releaseName: loki-stack
       values: |
-        deploymentMode: Monolithic
-
         loki:
-          auth_enabled: false
-
-          commonConfig:
-            replication_factor: 1
-
-          schemaConfig:
-            configs:
-              - from: "2024-04-01"
-                store: tsdb
-                object_store: s3
-                schema: v13
-                index:
-                  prefix: loki_index_
-                  period: 24h
-
-          pattern_ingester:
-            enabled: true
-
-          limits_config:
-            allow_structured_metadata: true
-            volume_enabled: true
-            retention_period: 24h
-
-          ruler:
-            enable_api: true
-
-        minio:
           enabled: true
           persistence:
             enabled: false
-
-        singleBinary:
-          replicas: 1
-          persistence:
-            enabled: false
-
-        backend:
-          replicas: 0
-        read:
-          replicas: 0
-        write:
-          replicas: 0
-        ingester:
-          replicas: 0
-        querier:
-          replicas: 0
-        queryFrontend:
-          replicas: 0
-        queryScheduler:
-          replicas: 0
-        distributor:
-          replicas: 0
-        compactor:
-          replicas: 0
-        indexGateway:
-          replicas: 0
-        bloomPlanner:
-          replicas: 0
-        bloomBuilder:
-          replicas: 0
-        bloomGateway:
-          replicas: 0
-
-        gateway:
-          enabled: true
           service:
             type: ClusterIP
 
-        chunksCache:
+        promtail:
+          enabled: true
+          config:
+            clients:
+              - url: http://loki-stack:3100/loki/api/v1/push
+
+        grafana:
           enabled: false
 
-        resultsCache:
+        prometheus:
           enabled: false
 
-        lokiCanary:
+        fluent-bit:
           enabled: false
 
-        test:
+        filebeat:
+          enabled: false
+
+        logstash:
           enabled: false
 
   destination:
