@@ -34,6 +34,16 @@ spec:
                 secretKeyRef:
                   name: flag-service-secret
                   key: AUTH_SERVICE_URL
+            - name: OTEL_ENABLED
+              value: "true"
+            - name: OTEL_SERVICE_NAME
+              value: "flag-service"
+            - name: DEPLOYMENT_ENVIRONMENT
+              value: "dev"
+            - name: SERVICE_VERSION
+              value: "otel-v1"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "http://otel-collector.observability.svc.cluster.local:4318/v1/traces"
           readinessProbe:
             httpGet:
               path: /health
